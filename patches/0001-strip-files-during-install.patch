@@ -1,0 +1,29 @@
+From c6f39f3871f5e200dc27af110a295d78d8cc54f3 Mon Sep 17 00:00:00 2001
+From: "Vladimir N. Silyaev" <vsilyaev@gmail.com>
+Date: Thu, 2 Mar 2023 15:26:25 +0000
+Subject: [PATCH 1/2] strip files during install
+
+---
+ litecross/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/litecross/Makefile b/litecross/Makefile
+index 9cd691b..333b557 100644
+--- a/litecross/Makefile
++++ b/litecross/Makefile
+@@ -250,10 +250,10 @@ install-musl: | obj_musl/.lc_built
+ 	cd obj_musl && $(MAKE) $(MUSL_VARS) DESTDIR=$(DESTDIR)$(OUTPUT)$(SYSROOT) install
+ 
+ install-binutils: | obj_binutils/.lc_built
+-	cd obj_binutils && $(MAKE) MAKE="$(MAKE) $(LIBTOOL_ARG)" DESTDIR=$(DESTDIR)$(OUTPUT) install
++	cd obj_binutils && $(MAKE) MAKE="$(MAKE) $(LIBTOOL_ARG)" DESTDIR=$(DESTDIR)$(OUTPUT) install-strip
+ 
+ install-gcc: | obj_gcc/.lc_built
+-	cd obj_gcc && $(MAKE) MAKE="$(MAKE) $(LIBTOOL_ARG)" DESTDIR=$(DESTDIR)$(OUTPUT) install
++	cd obj_gcc && $(MAKE) MAKE="$(MAKE) $(LIBTOOL_ARG)" DESTDIR=$(DESTDIR)$(OUTPUT) install-strip
+ 	ln -sf $(TARGET)-gcc $(DESTDIR)$(OUTPUT)/bin/$(TARGET)-cc
+ 
+ ifneq ($(LINUX_SRCDIR),)
+-- 
+2.39.1
+
