@@ -1,0 +1,20 @@
+name: release
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: []
+    tags: [v*]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v3
+    - name: upload release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: '*/*-host.tar.xz'
