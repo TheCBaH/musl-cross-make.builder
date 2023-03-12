@@ -86,7 +86,7 @@ jobs:
       id: ccache
       with:
         path: .ccache
-        key: ccache-${{ matrix.host }}-${{ matrix.gcc }}-${{ matrix.target}}-${{ hashFiles('Makefile', 'config.mak.musl') }}
+        key: ccache-${{ matrix.host }}-${{ matrix.gcc }}-${{ matrix.target}}-${{ hashFiles('Makefile','config.mak.musl') }}
         restore-keys: |
           ccache-${{ matrix.host }}-${{ matrix.gcc }}-${{ matrix.target}}
     - name: sources
@@ -109,12 +109,12 @@ jobs:
         echo "::group::Apply patches"
         ${{ env.EXEC }} make patches.apply
         echo "::endgroup::"
-        ${{ env.EXEC }} .github/workflows/quiet.sh make build.${{ matrix.gcc }}.${{ matrix.target }}
+        ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
       run: |
         echo "::group::ccache-stat"
         ${{ env.EXEC }} make ccache-stat
-        ${{ env.EXEC }} .github/workflows/quiet.sh make install.${{ matrix.gcc }}.${{ matrix.target }}
+        ${{ env.EXEC }} .github/workflows/quiet.sh make install,${{ matrix.gcc }},${{ matrix.target }}
         echo "::group::size"
         du -sh out/${{ matrix.gcc }}/${{ matrix.target }}
     - name: test
@@ -123,7 +123,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -y install --no-install-recommends qemu-user
         fi
-        ${{ env.EXEC }} make test.${{ matrix.gcc }}.${{ matrix.target }}
+        ${{ env.EXEC }} make test,${{ matrix.gcc }},${{ matrix.target }}
     - name: archive
       run: |
         set -x
