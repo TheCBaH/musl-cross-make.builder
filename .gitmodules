@@ -1,6 +1,3 @@
 [submodule "musl-cross-make"]
 	path = musl-cross-make
 	url = https://github.com/richfelker/musl-cross-make.git
-[submodule "dkml-compiler"]
-	path = dkml-compiler
-	url = https://github.com/diskuv/dkml-compiler.git
