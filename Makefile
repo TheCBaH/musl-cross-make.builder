@@ -17,15 +17,15 @@ patches.apply:
 
 empty:=
 space+= ${empty} ${empty}
-coma=,
+dot=.
 
 CPUS=$(or $(shell getconf _NPROCESSORS_ONLN 2>/dev/null),1)
 
-config,%:
+config.%:
 	${MAKE} -C ${musl} clean
 	set -eux;\
-	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
-	 target='$(word 3, $(subst ${coma},${space},$@))';\
+	 gcc='$(word 2, $(subst ${dot},${space},$@))';\
+	 target='$(word 3, $(subst ${dot},${space},$@))';\
 	 rm -f ${musl}/config.mak;\
 	 cp config.mak.musl ${musl}/config.mak;\
 	 echo "GCC_VER=$$gcc" >> ${musl}/config.mak;\
@@ -45,26 +45,26 @@ ccache-init:
 ccache-stat:
 	ccache --show-stat
 
-build,%:
-	${MAKE} $(subst build${coma},config${coma},$@)
+build.%:
+	${MAKE} $(subst build${dot},config${coma},$@)
 	${MAKE} -C ${musl} -j${CPUS} CCACHE=ccache
 
 OUTDIR=out
 
-install,%:
+install.%:
 	set -eux;\
-	 target='$(word 3, $(subst ${coma},${space},$@))';\
-	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
+	 target='$(word 3, $(subst ${dot},${space},$@))';\
+	 gcc='$(word 2, $(subst ${dot},${space},$@))';\
 	 dst=${OUTDIR}/$$gcc/$$target;\
 	 rm -rf $$dst;\
 	 ${MAKE} -C ${musl} TARGET=$$target OUTPUT="$$(readlink -m $$dst)" install;\
 	 $$dst/bin/$$target-cc -v;\
 	 ./tool.sh $$dst $$target fixup
 
-test,%:
+test.%:
 	set -eux;\
-	 target='$(word 3, $(subst ${coma},${space},$@))';\
-	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
+	 target='$(word 3, $(subst ${dot},${space},$@))';\
+	 gcc='$(word 2, $(subst ${dot},${space},$@))';\
 	 dst=${OUTDIR}/$$gcc/$$target;\
 	 bin=${OUTDIR}/$${gcc}_$${target}_test;\
 	 $$dst/bin/$$target-cc hello.c -o $$bin;\
