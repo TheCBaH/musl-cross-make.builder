@@ -8,12 +8,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  ubuntu_version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: version
+        id: version
+        run: |
+          . /etc/os-release
+          echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
+  build:
+    needs: [ubuntu_version]
+    runs-on: ${{ needs.ubuntu_version.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
-        host: [ host ]
+        host:
+          - ${{ needs.ubuntu_version.outputs.version }}
         gcc:
           - 10.3.0
           - 11.2.0
@@ -37,25 +49,25 @@ jobs:
           - host: devcontainer
             gcc: 9.4.0
             target: x86_64-linux-musl
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: i386-linux-musl
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: arm-linux-musleabi
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: arm-linux-musleabihf
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: mips-linux-musl
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: powerpc-linux-musl
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: riscv64-linux-musl
-          - host: host
+          - host: ${{ needs.ubuntu_version.outputs.version }}
             gcc: 9.4.0
             target: s390x-linux-musl
     steps:
@@ -74,7 +86,7 @@ jobs:
         devcontainer)
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
-        host)
+        ${{ needs.ubuntu_version.outputs.version }})
           echo "::group::apt"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
@@ -119,7 +131,7 @@ jobs:
         du -sh out/${{ matrix.gcc }}/${{ matrix.target }}
     - name: test
       run: |
-        if [ "${{ matrix.host }}"  = host ]; then
+        if [ "${{ matrix.host }}" = ${{ needs.ubuntu_version.outputs.version }} ]; then
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -y install --no-install-recommends qemu-user
         fi
@@ -137,8 +149,8 @@ jobs:
         name: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}
         path: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}.tar.xz
   test:
-    runs-on: ubuntu-latest
-    needs: [build]
+    runs-on: ${{ needs.ubuntu_version.outputs.version }}
+    needs: [ubuntu_version, build]
     steps:
     - name: checkout
       uses: actions/checkout@v3
@@ -158,7 +170,7 @@ jobs:
         done
   release:
     runs-on: ubuntu-latest
-    needs: [build, test]
+    needs: [ubuntu_version, build, test]
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
@@ -167,4 +179,4 @@ jobs:
     - name: upload release
       uses: softprops/action-gh-release@v1
       with:
-        files: '*/*-host.tar.xz'
+        files: '*/*-${{ needs.ubuntu_version.outputs.version }}.tar.xz'
