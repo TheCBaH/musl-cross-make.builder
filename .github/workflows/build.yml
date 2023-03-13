@@ -121,6 +121,7 @@ jobs:
         echo "::group::Apply patches"
         ${{ env.EXEC }} make patches.apply
         echo "::endgroup::"
+        ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }}
         ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
       run: |
