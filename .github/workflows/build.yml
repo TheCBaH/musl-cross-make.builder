@@ -18,16 +18,19 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v3
-    - name: version
-      id: version
-      run: |
-        . /etc/os-release
-        echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
     - name: static
+      id: static
       uses: ./.github/workflows/actions/docker
       with:
         image: static
         password: ${{ secrets.GITHUB_TOKEN }}
+    - name: version
+      id: version
+      run: |
+        echo ${{ steps.static.outputs.fetch }}
+        false
+        . /etc/os-release
+        echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
   build:
     needs: [prepare]
     runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
