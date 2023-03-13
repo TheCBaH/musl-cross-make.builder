@@ -33,20 +33,20 @@ lib)
     echo $lib_root
     ;;
 meta)
-    grep '^GCC_VER\|^TARGET' musl-cross-make/config.mak >$dst/.config
-    grep '^BINUTILS_VER\|^MUSL_VER\|^GMP_VER\|^MPC_VER\|^MPFR_REV\|^LINUX_VER' musl-cross-make/Makefile >>$dst/.config
-    cat <<_EOF_ >$dst/with-target
+    grep '^GCC_VER\|^TARGET' musl-cross-make/config.mak >$dst/bin/.$target
+    grep '^BINUTILS_VER\|^MUSL_VER\|^GMP_VER\|^MPC_VER\|^MPFR_REV\|^LINUX_VER' musl-cross-make/Makefile >>$dst/bin/.$target
+    cat <<_EOF_ >$dst/bin/$target
 #!/bin/sh
 set -eu
 #set -x
-this=\$(readlink -f \$(dirname \$0))
+this=\$(dirname \$0)/..
 _EOF_
 if [ $arch = x86_64 ] || [ $arch = i386 ]; then
-    echo "exec \$this/$target/lib/$ld \"\$@\"" >>$dst/with-target
+    echo "exec \$this/$target/lib/$ld \"\$@\"" >>$dst/bin/$target
 else
-    echo "exec qemu-$qemu_arch -L \$this/$target \"\$@\"" >>$dst/with-target
+    echo "exec qemu-$qemu_arch -L \$this/$target \"\$@\"" >>$dst/bin/$target
 fi
-    chmod +x $dst/with-target
+    chmod +x $dst/bin/$target
     ;;
 *)
     echo "Not supported '$cmd'" >&2

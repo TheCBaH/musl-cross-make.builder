@@ -82,7 +82,7 @@ test,%:
 	 dst=${OUTDIR}/$$gcc/$$target;\
 	 bin=${OUTDIR}/$${gcc}_$${target}_test;\
 	 $$dst/bin/$$target-cc hello.c -o $$bin;\
-	 $$dst/with-target $$bin
+	 $$dst/bin/$$target $$bin
 
 clean:
 	${MAKE} -C ${musl} $@
