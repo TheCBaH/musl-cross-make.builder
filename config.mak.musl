@@ -60,7 +60,7 @@ DL_CMD = wget -c --progress=dot:giga -O
 # binaries produced by the existing toolchain (in this example, i486).
 
 # COMMON_CONFIG += CC="i486-linux-musl-gcc -static --static" CXX="i486-linux-musl-g++ -static --static"
-COMMON_CONFIG += CC="${CCACHE} gcc ${LDFLAGS_STATIC}" CXX="${CCACHE} g++ ${LDFLAGS_STATIC}"
+COMMON_CONFIG += CC="${CCACHE} gcc" CXX="${CCACHE} g++"
 
 # Recommended options for smaller build for deploying binaries:
 
