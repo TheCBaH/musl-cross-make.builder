@@ -17,10 +17,10 @@ powerpc*)
     qemu_arch="$arch"
     ;;
 esac
+ld=ld-musl-${arch}${kind}.so.1
 
 case "$cmd" in
 fixup)
-    ld=ld-musl-${arch}${kind}.so.1
     link=$(readlink $lib/$ld)
     link=$(basename $link)
     rm -rf $lib/$ld
@@ -33,13 +33,19 @@ lib)
     echo $lib_root
     ;;
 meta)
-    grep '^GCC_VER' musl-cross-make/config.mak >$dst/.config
-    grep '^BINUTILS_VER\|^MUSL_VER\|^GMP_VER\|^MPC_VER\|^MPFR_REV\|^LINUX_VER' musl-cross-make/Makefile >>$dst.config
+    grep '^GCC_VER\|^TARGET' musl-cross-make/config.mak >$dst/.config
+    grep '^BINUTILS_VER\|^MUSL_VER\|^GMP_VER\|^MPC_VER\|^MPFR_REV\|^LINUX_VER' musl-cross-make/Makefile >>$dst/.config
     cat <<_EOF_ >$dst/with-target
 #!/bin/sh
 set -eu
-exec qemu-$qemu_arch -L $lib_root \$@
+#set -x
+this=\$(readlink -f \$(dirname \$0))
 _EOF_
+if [ $arch = x86_64 ] || [ $arch = i386 ]; then
+    echo "exec \$this/$target/lib/$ld \"\$@\"" >>$dst/with-target
+else
+    echo "exec qemu-$qemu_arch -L \$this/$target \"\$@\"" >>$dst/with-target
+fi
     chmod +x $dst/with-target
     ;;
 *)

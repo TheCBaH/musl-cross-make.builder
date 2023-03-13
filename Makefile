@@ -40,8 +40,8 @@ config,%:
 	 target='$(word 3, $(subst ${coma},${space},$@))';\
 	 rm -f ${musl}/config.mak;\
 	 cp config.mak.musl ${musl}/config.mak;\
-	 echo "GCC_VER=$$gcc" >> ${musl}/config.mak;\
-	 echo "TARGET=$$target" >> ${musl}/config.mak;\
+	 echo "GCC_VER = $$gcc" >> ${musl}/config.mak;\
+	 echo "TARGET = $$target" >> ${musl}/config.mak;\
 	 if [ "$$gcc" = '5.3.0' ] || [ "$$gcc" = '6.5.0' ]; then\
 		echo "CFLAGS_WARN=-w" >> ${musl}/config.mak;\
 	 fi;\
@@ -70,6 +70,7 @@ install,%:
 	 target='$(word 3, $(subst ${coma},${space},$@))';\
 	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
 	 dst=${OUTDIR}/$$gcc/$$target;\
+	 ./tool.sh $$dst $$target meta;false;\
 	 rm -rf $$dst; mkdir -p ${OUTDIR}/$$gcc/$$target;\
 	 ${MAKE} -C ${musl} TARGET=$$target OUTPUT="$$(realpath $$dst)" install;\
 	 $$dst/bin/$$target-cc -v;\
@@ -82,7 +83,7 @@ test,%:
 	 dst=${OUTDIR}/$$gcc/$$target;\
 	 bin=${OUTDIR}/$${gcc}_$${target}_test;\
 	 $$dst/bin/$$target-cc hello.c -o $$bin;\
-	 qemu-$$(./tool.sh $$dst $$target qemu-arch) -L $$(./tool.sh $$dst $$target lib) $$bin
+	 $$dst/with-target $$bin
 
 clean:
 	${MAKE} -C ${musl} $@
