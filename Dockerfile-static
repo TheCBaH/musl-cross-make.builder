@@ -2,7 +2,6 @@ ARG OS_VER=latest
 FROM alpine:${OS_VER}
 RUN set -eux;\
     apk --no-cache add\
- ;\
  autoconf\
  automake\
  bash\
@@ -18,4 +17,5 @@ RUN set -eux;\
  qemu-user\
  zlib-dev\
  zlib-static\
+ ;\
     echo DONE
