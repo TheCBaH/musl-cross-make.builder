@@ -8,36 +8,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  ubuntu_version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - name: version
-        id: version
-        run: |
-          . /etc/os-release
-          echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
-  image:
+  prepare:
     runs-on: ubuntu-latest
     outputs:
       static: ${{ steps.static.outputs.fetch }}
+      ubuntu_version: ${{ steps.version.outputs.version }}
     steps:
     - name: checkout
       uses: actions/checkout@v3
+    - name: version
+      id: version
+      run: |
+        . /etc/os-release
+        echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
     - name: static
       uses: ./.github/workflows/actions/docker
       with:
         name: static
         password: ${{ secrets.GITHUB_TOKEN }}
   build:
-    needs: [image, ubuntu_version]
-    runs-on: ${{ needs.ubuntu_version.outputs.version }}
+    needs: [prepare]
+    runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
     strategy:
       fail-fast: false
       matrix:
         host:
-          - ${{ needs.ubuntu_version.outputs.version }}
+          - ${{ needs.prepare.outputs.ubuntu_version }}
         gcc:
           - 10.3.0
           - 11.2.0
@@ -67,25 +63,25 @@ jobs:
           - host: devcontainer
             gcc: 9.4.0
             target: x86_64-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: i386-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: arm-linux-musleabi
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: arm-linux-musleabihf
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: mips-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: powerpc-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: riscv64-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: ${{ needs.prepare.outputs.ubuntu_version }}
             gcc: 9.4.0
             target: s390x-linux-musl
     steps:
@@ -105,11 +101,11 @@ jobs:
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
         static)
-          ${{ needs.image.outputs.static }}
+          ${{ needs.prepare.outputs.static }}
           make static.image
           echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
           ;;
-        ${{ needs.ubuntu_version.outputs.version }})
+        ${{ needs.prepare.outputs.ubuntu_version }})
           echo "::group::apt"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
@@ -178,7 +174,7 @@ jobs:
         name: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}
         path: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}.tar.xz
   test:
-    runs-on: ${{ needs.ubuntu_version.outputs.version }}
+    runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
     needs: [ubuntu_version, build]
     steps:
     - name: checkout
@@ -208,4 +204,4 @@ jobs:
     - name: upload release
       uses: softprops/action-gh-release@v1
       with:
-        files: '*/*-${{ needs.ubuntu_version.outputs.version }}.tar.xz'
+        files: '*/*-${{ needs.prepare.outputs.ubuntu_version }}.tar.xz'
