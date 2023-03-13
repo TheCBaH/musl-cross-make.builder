@@ -14,7 +14,13 @@ RUN set -eux;\
  make\
  patch\
  pkgconf\
- qemu-user\
+ qemu-aarch64\
+ qemu-arm\
+ qemu-i386\
+ qemu-ppc64\
+ qemu-riscv64\
+ qemu-s390x\
+ qemu-x86_64\
  zlib-dev\
  zlib-static\
  ;\
