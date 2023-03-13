@@ -43,6 +43,12 @@ jobs:
           - gcc: 4.2.1
           - gcc: 5.3.0
         include:
+          - host: static
+            gcc: 9.4.0
+            target: aarch64-linux-musl
+          - host: static
+            gcc: 9.4.0
+            target: x86_64-linux-musl
           - host: devcontainer
             gcc: 9.4.0
             target: aarch64-linux-musl
@@ -86,6 +92,11 @@ jobs:
         devcontainer)
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
+        static)
+          make static.image
+          echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
+          ;;
+        static)
         ${{ needs.ubuntu_version.outputs.version }})
           echo "::group::apt"
           export DEBIAN_FRONTEND=noninteractive
@@ -121,7 +132,7 @@ jobs:
         echo "::group::Apply patches"
         ${{ env.EXEC }} make patches.apply
         echo "::endgroup::"
-        ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }}
+        ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }} STATIC=${{ matrix.host == 'static' }}
         ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
       run: |
@@ -132,11 +143,16 @@ jobs:
         du -sh out/${{ matrix.gcc }}/${{ matrix.target }}
     - name: test
       run: |
-        if [ "${{ matrix.host }}" = ${{ needs.ubuntu_version.outputs.version }} ]; then
+        if [ "${{ matrix.host }}" != devcontainer ]; then
+          echo "::group::install"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -y install --no-install-recommends qemu-user
+          echo "::endgroup::"
         fi
         ${{ env.EXEC }} make test,${{ matrix.gcc }},${{ matrix.target }}
+        if [ "${{ matrix.host }}" = static ]; then
+          make test,${{ matrix.gcc }},${{ matrix.target }}
+        fi
     - name: archive
       run: |
         set -x

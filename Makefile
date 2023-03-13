@@ -44,7 +44,7 @@ config,%:
 	 if [ "$$gcc" = '5.3.0' ] || [ "$$gcc" = '6.5.0' ]; then\
 		echo "CFLAGS_WARN=-w" >> ${musl}/config.mak;\
 	 fi;\
-	 if [ "${STATIC}" = 'yes' ]; then\
+	 if [ "${STATIC}" = 'yes' ] || [ "${STATIC}" = 'true' ]; then\
 		echo "LDFLAGS_STATIC=-static --static" >> ${musl}/config.mak;\
 	 fi;
 
