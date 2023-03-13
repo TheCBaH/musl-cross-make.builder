@@ -40,7 +40,7 @@ runs:
           old_id=$(docker image inspect $IMAGE_ID:$TAG --format "{{.ID}}")
         fi
         echo "::group::build"
-        make ${{ matrix.build }}.image DOCKER_BUILD_OPTS="--cache-from=$IMAGE_ID"
+        make ${{ inputs.image }}.image DOCKER_BUILD_OPTS="--cache-from=$IMAGE_ID:$TAG"
         if [ -n '${{ inputs.password }}' ]; then
           echo "::group::push"
           new_id=$(docker image inspect $image --format "{{.ID}}")
