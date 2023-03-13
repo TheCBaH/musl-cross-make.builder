@@ -2,8 +2,8 @@ name: docker
 author: Vladimir Silyaev
 description: Cache docker images
 inputs:
-  name:
-    description: "Name of image cached in the repository"
+  image:
+    description: "image cached in the repository"
     required: true
   registry:
     description: 'Server address of Docker registry. If not set then will default to Docker Hub'
