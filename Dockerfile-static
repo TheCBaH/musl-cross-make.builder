@@ -18,9 +18,10 @@ RUN set -eux;\
  qemu-aarch64\
  qemu-arm\
  qemu-i386\
- qemu-mips\
+ qemu-ppc64\
  qemu-ppc\
  qemu-riscv64\
+ qemu-riscv\
  qemu-s390x\
  qemu-x86_64\
  zlib-dev\

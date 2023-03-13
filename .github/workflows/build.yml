@@ -82,6 +82,9 @@ jobs:
             target: x86_64-linux-musl
           - host: static
             gcc: 9.4.0
+            target: powerpc64-linux-musl
+          - host: static
+            gcc: 9.4.0
             target: i386-linux-musl
           - host: static
             gcc: 9.4.0
@@ -91,7 +94,7 @@ jobs:
             target: arm-linux-musleabihf
           - host: static
             gcc: 9.4.0
-            target: mips-linux-musl
+            target: riscv-linux-musl
           - host: static
             gcc: 9.4.0
             target: powerpc-linux-musl
