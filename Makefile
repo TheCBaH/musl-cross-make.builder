@@ -45,7 +45,7 @@ config,%:
 		echo "CFLAGS_WARN=-w" >> ${musl}/config.mak;\
 	 fi;\
 	 if [ "${STATIC}" = 'yes' ]; then\
-		echo "LDFLAGS_STATIC=-static" >> ${musl}/config.mak;\
+		echo "LDFLAGS_STATIC=-static --static" >> ${musl}/config.mak;\
 	 fi;
 
 CCACHE_CONFIG=--max-size=128M --set-config=compression=true
@@ -101,6 +101,7 @@ image_name=${USER}_$(basename $(1))
 	 --build-arg USERINFO=${USER}:${UID}:${GROUP}:${GID}:${KVM}\
 	 $(if ${http_proxy},--build-arg http_proxy=${http_proxy})\
 	 .
+
 %.image_run:
 	docker run --rm --init --hostname $@ -i${TERMINAL} -w ${WORKSPACE} -v ${WORKSPACE}:${WORKSPACE}\
 	 ${DOCKER_RUN_OPTS}\
