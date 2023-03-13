@@ -13,7 +13,8 @@ jobs:
     permissions:
       packages: write
     outputs:
-      static: ${{ steps.static.outputs.fetch }}
+      static_fetch: ${{ steps.static.outputs.fetch }}
+      static_cache: ${{ steps.static.outputs.cache }}
       ubuntu_version: ${{ steps.version.outputs.version }}
     steps:
     - name: checkout
@@ -104,8 +105,8 @@ jobs:
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
         static)
-          ${{ needs.prepare.outputs.static }}
-          make static.image
+          ${{ needs.prepare.outputs.static_fetch }}
+          make static.image ${{ needs.prepare.outputs.static_cache }}
           echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
           ;;
         ${{ needs.prepare.outputs.ubuntu_version }})

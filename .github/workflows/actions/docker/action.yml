@@ -20,6 +20,9 @@ outputs:
   fetch:
     description: 'command to pull image'
     value: ${{ steps.setup.outputs.fetch }}
+  cache:
+    description: 'options for docket'
+    value: ${{ steps.setup.outputs.cache }}
 
 runs:
   using: "composite"
@@ -59,4 +62,5 @@ runs:
         fi
         if [ -n "${old_id}${new_id}" ]; then
           echo "fetch=docker pull $IMAGE_ID:$TAG" >> $GITHUB_OUTPUT
+          echo "cache=DOCKER_BUILD_OPTS='--cache-from=$IMAGE_ID:$TAG'" >> $GITHUB_OUTPUT
         fi
