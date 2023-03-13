@@ -27,8 +27,6 @@ jobs:
     - name: version
       id: version
       run: |
-        echo ${{ steps.static.outputs.fetch }}
-        false
         . /etc/os-release
         echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
   build:
@@ -56,37 +54,37 @@ jobs:
           - gcc: 4.2.1
           - gcc: 5.3.0
         include:
-          - host: static
-            gcc: 9.4.0
-            target: aarch64-linux-musl
-          - host: static
-            gcc: 9.4.0
-            target: x86_64-linux-musl
           - host: devcontainer
             gcc: 9.4.0
             target: aarch64-linux-musl
           - host: devcontainer
             gcc: 9.4.0
             target: x86_64-linux-musl
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
+            gcc: 9.4.0
+            target: aarch64-linux-musl
+          - host: static
+            gcc: 9.4.0
+            target: x86_64-linux-musl
+          - host: static
             gcc: 9.4.0
             target: i386-linux-musl
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: arm-linux-musleabi
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: arm-linux-musleabihf
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: mips-linux-musl
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: powerpc-linux-musl
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: riscv64-linux-musl
-          - host: ${{ needs.prepare.outputs.ubuntu_version }}
+          - host: static
             gcc: 9.4.0
             target: s390x-linux-musl
     steps:
