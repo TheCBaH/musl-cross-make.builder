@@ -18,7 +18,7 @@ RUN set -eux;\
  qemu-aarch64\
  qemu-arm\
  qemu-i386\
- qemu-mips\
+ qemu-ppc64\
  qemu-ppc\
  qemu-riscv64\
  qemu-s390x\
