@@ -28,7 +28,7 @@ jobs:
     - name: static
       uses: ./.github/workflows/actions/docker
       with:
-        image: static
+        name: static
         password: ${{ secrets.GITHUB_TOKEN }}
   build:
     needs: [image, ubuntu_version]
