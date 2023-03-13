@@ -14,7 +14,7 @@ inputs:
     required: false
   password:
     description: 'Password or personal access token used to log against the Docker registry'
-    required: false
+    required: true
 
 outputs:
   fetch:
@@ -52,10 +52,11 @@ runs:
               echo "::info :: pushed $IMAGE_ID:$TAG"
             else
               echo "::warning :: can't push $IMAGE_ID:$TAG"
+              new_id=
             fi
             docker logout ${{ inputs.registry }}
           fi
         fi
-        if [ -n "${old_id}.${new_id}" ]; then
+        if [ -n "${old_id}${new_id}" ]; then
           echo "fetch=docker pull $IMAGE_ID:$TAG" >> $GITHUB_OUTPUT
         fi
