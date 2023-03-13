@@ -31,7 +31,6 @@ space+= ${empty} ${empty}
 coma=,
 
 CPUS=$(or $(shell getconf _NPROCESSORS_ONLN 2>/dev/null),1)
-CPUS=1
 
 config,%:
 	${MAKE} -C ${musl} clean
