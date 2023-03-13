@@ -31,7 +31,7 @@ runs:
         echo "::group::fetch"
         set -x
         image=$(make ${{ inputs.image }}.image_print)
-        IMAGE_ID=${{ inputs.registry }}//$GITHUB_REPOSITORY/${{ inputs.image }}
+        IMAGE_ID=${{ inputs.registry }}/$GITHUB_REPOSITORY/${{ inputs.image }}
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
         TAG="$GITHUB_REF_NAME"
         TAG=$(echo $TAG | tr '[A-Z].' '[a-z]_')
