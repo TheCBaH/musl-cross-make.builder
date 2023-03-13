@@ -1,6 +1,6 @@
-name: devcontainer
+name: docker
 author: Vladimir Silyaev
-description: Setup devcontainer on ubuntu GitHub runner
+description: Cache docker images
 inputs:
   name:
     description: "Name of image cached in the repository"
@@ -31,7 +31,7 @@ runs:
         echo "::group::fetch"
         set -x
         image=$(make ${{ inputs.image }}.image_print)
-        IMAGE_ID=${{ inputs.registry }}//$GITHUB_REPOSITORY/$image
+        IMAGE_ID=${{ inputs.registry }}//$GITHUB_REPOSITORY/${{ inputs.image }}
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
         TAG="$GITHUB_REF_NAME"
         TAG=$(echo $TAG | tr '[A-Z].' '[a-z]_')
@@ -45,6 +45,7 @@ runs:
           echo "::group::push"
           new_id=$(docker image inspect $image --format "{{.ID}}")
           if [ "$old_id" != "$new_id" ]; then
+            docker tag $image $IMAGE_ID:$TAG
             username='${{ inputs.username }}'
             echo '${{ inputs.password }}' | docker login ${{ inputs.registry }} -u ${username:-'${{ github.actor }}'} --password-stdin
             if docker push $IMAGE_ID:$TAG ; then
