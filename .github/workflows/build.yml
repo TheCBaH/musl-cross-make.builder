@@ -96,7 +96,6 @@ jobs:
           make static.image
           echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
           ;;
-        static)
         ${{ needs.ubuntu_version.outputs.version }})
           echo "::group::apt"
           export DEBIAN_FRONTEND=noninteractive
