@@ -1,0 +1,29 @@
+ARG OS_VER=latest
+FROM alpine:${OS_VER}
+RUN set -eux;\
+    apk --no-cache add\
+ autoconf\
+ automake\
+ bash\
+ ccache\
+ file\
+ g++\
+ gcc\
+ git\
+ libc-dev\
+ libtool\
+ make\
+ patch\
+ pkgconf\
+ qemu-aarch64\
+ qemu-arm\
+ qemu-i386\
+ qemu-mips\
+ qemu-ppc\
+ qemu-riscv64\
+ qemu-s390x\
+ qemu-x86_64\
+ zlib-dev\
+ zlib-static\
+ ;\
+    echo DONE

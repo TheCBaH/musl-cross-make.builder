@@ -64,7 +64,7 @@ COMMON_CONFIG += CC="${CCACHE} gcc" CXX="${CCACHE} g++"
 
 # Recommended options for smaller build for deploying binaries:
 
-COMMON_CONFIG += CFLAGS="${CFLAGS_WARN} -g0 -Os" CXXFLAGS="${CFLAGS_WARN} -g0 -Os" LDFLAGS="-s"
+COMMON_CONFIG += CFLAGS="${CFLAGS_WARN} -g0 -Os" CXXFLAGS="${CFLAGS_WARN} -g0 -Os" LDFLAGS="${LDFLAGS_STATIC} -s"
 
 # Options you can add for faster/simpler build at the expense of features:
 

@@ -1,3 +1,14 @@
+ID_OFFSET=$(or $(shell id -u docker 2>/dev/null),0)
+UID=$(shell expr $$(id -u) - ${ID_OFFSET})
+GID=$(shell expr $$(id -g) - ${ID_OFFSET})
+USER=$(shell id -un)
+GROUP=$(shell id -gn)
+WORKSPACE=$(or ${LOCAL_WORKSPACE_FOLDER},${CURDIR})
+TERMINAL=$(shell test -t 0 && echo t)
+
+USERSPEC=--user=${UID}:${GID}
+image_name=${USER}_$(basename $(1))
+
 all:
 	echo 'Not supported' >&2
 
@@ -32,7 +43,10 @@ config,%:
 	 echo "TARGET=$$target" >> ${musl}/config.mak;\
 	 if [ "$$gcc" = '5.3.0' ] || [ "$$gcc" = '6.5.0' ]; then\
 		echo "CFLAGS_WARN=-w" >> ${musl}/config.mak;\
-	 fi
+	 fi;\
+	 if [ "${STATIC}" = 'yes' ] || [ "${STATIC}" = 'true' ]; then\
+		echo "LDFLAGS_STATIC=-static --static" >> ${musl}/config.mak;\
+	 fi;
 
 CCACHE_CONFIG=--max-size=128M --set-config=compression=true
 CCACHE_DIR=${CURDIR}/.ccache
@@ -46,7 +60,6 @@ ccache-stat:
 	ccache --show-stat
 
 build,%:
-	${MAKE} $(subst build${coma},config${coma},$@)
 	${MAKE} -C ${musl} -j${CPUS} CCACHE=ccache
 
 OUTDIR=out
@@ -56,8 +69,8 @@ install,%:
 	 target='$(word 3, $(subst ${coma},${space},$@))';\
 	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
 	 dst=${OUTDIR}/$$gcc/$$target;\
-	 rm -rf $$dst;\
-	 ${MAKE} -C ${musl} TARGET=$$target OUTPUT="$$(readlink -m $$dst)" install;\
+	 rm -rf $$dst; mkdir -p ${OUTDIR}/$$gcc/$$target;\
+	 ${MAKE} -C ${musl} TARGET=$$target OUTPUT="$$(realpath $$dst)" install;\
 	 $$dst/bin/$$target-cc -v;\
 	 ./tool.sh $$dst $$target fixup
 
@@ -80,3 +93,19 @@ devcontainer:
 	devcontainer up --workspace-folder .
 	devcontainer exec --workspace-folder . ccache --version
 	devcontainer exec --workspace-folder . qemu-i386 --version
+
+image_name=${USER}_$(basename $(1))
+
+%.image: Dockerfile-%
+	docker build --tag $(call image_name,$@) ${DOCKER_BUILD_OPTS} -f $^\
+	 --build-arg USERINFO=${USER}:${UID}:${GROUP}:${GID}:${KVM}\
+	 $(if ${http_proxy},--build-arg http_proxy=${http_proxy})\
+	 .
+
+%.image_run:
+	docker run --rm --init --hostname $@ -i${TERMINAL} -w ${WORKSPACE} -v ${WORKSPACE}:${WORKSPACE}\
+	 ${DOCKER_RUN_OPTS}\
+	 ${USERSPEC} $(call image_name, $@) ${CMD}
+
+%.image_print:
+	@echo "$(call image_name, $@)"

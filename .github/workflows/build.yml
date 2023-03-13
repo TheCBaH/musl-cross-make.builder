@@ -8,24 +8,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  ubuntu_version:
+  prepare:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      static_fetch: ${{ steps.static.outputs.fetch }}
+      static_cache: ${{ steps.static.outputs.cache }}
+      ubuntu_version: ${{ steps.version.outputs.version }}
     steps:
-      - name: version
-        id: version
-        run: |
-          . /etc/os-release
-          echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: static
+      id: static
+      uses: ./.github/workflows/actions/docker
+      with:
+        image: static
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: version
+      id: version
+      run: |
+        . /etc/os-release
+        echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
   build:
-    needs: [ubuntu_version]
-    runs-on: ${{ needs.ubuntu_version.outputs.version }}
+    needs: [prepare]
+    runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
     strategy:
       fail-fast: false
       matrix:
         host:
-          - ${{ needs.ubuntu_version.outputs.version }}
+          - ${{ needs.prepare.outputs.ubuntu_version }}
         gcc:
           - 10.3.0
           - 11.2.0
@@ -49,25 +61,31 @@ jobs:
           - host: devcontainer
             gcc: 9.4.0
             target: x86_64-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
+            gcc: 9.4.0
+            target: aarch64-linux-musl
+          - host: static
+            gcc: 9.4.0
+            target: x86_64-linux-musl
+          - host: static
             gcc: 9.4.0
             target: i386-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: arm-linux-musleabi
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: arm-linux-musleabihf
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: mips-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: powerpc-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: riscv64-linux-musl
-          - host: ${{ needs.ubuntu_version.outputs.version }}
+          - host: static
             gcc: 9.4.0
             target: s390x-linux-musl
     steps:
@@ -86,7 +104,12 @@ jobs:
         devcontainer)
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
-        ${{ needs.ubuntu_version.outputs.version }})
+        static)
+          ${{ needs.prepare.outputs.static_fetch }}
+          make static.image ${{ needs.prepare.outputs.static_cache }}
+          echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
+          ;;
+        ${{ needs.prepare.outputs.ubuntu_version }})
           echo "::group::apt"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
@@ -121,6 +144,7 @@ jobs:
         echo "::group::Apply patches"
         ${{ env.EXEC }} make patches.apply
         echo "::endgroup::"
+        ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }} STATIC=${{ matrix.host == 'static' }}
         ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
       run: |
@@ -131,11 +155,16 @@ jobs:
         du -sh out/${{ matrix.gcc }}/${{ matrix.target }}
     - name: test
       run: |
-        if [ "${{ matrix.host }}" = ${{ needs.ubuntu_version.outputs.version }} ]; then
+        if [ "${{ matrix.host }}" != devcontainer ]; then
+          echo "::group::install"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -y install --no-install-recommends qemu-user
+          echo "::endgroup::"
         fi
         ${{ env.EXEC }} make test,${{ matrix.gcc }},${{ matrix.target }}
+        if [ "${{ matrix.host }}" = static ]; then
+          make test,${{ matrix.gcc }},${{ matrix.target }}
+        fi
     - name: archive
       run: |
         set -x
@@ -149,8 +178,8 @@ jobs:
         name: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}
         path: musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}.tar.xz
   test:
-    runs-on: ${{ needs.ubuntu_version.outputs.version }}
-    needs: [ubuntu_version, build]
+    runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
+    needs: [prepare, build]
     steps:
     - name: checkout
       uses: actions/checkout@v3
@@ -170,7 +199,7 @@ jobs:
         done
   release:
     runs-on: ubuntu-latest
-    needs: [ubuntu_version, build, test]
+    needs: [prepare, build, test]
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
@@ -179,4 +208,4 @@ jobs:
     - name: upload release
       uses: softprops/action-gh-release@v1
       with:
-        files: '*/*-${{ needs.ubuntu_version.outputs.version }}.tar.xz'
+        files: '*/*-static.tar.xz'
