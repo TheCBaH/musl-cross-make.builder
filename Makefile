@@ -107,3 +107,6 @@ image_name=${USER}_$(basename $(1))
 	docker run --rm --init --hostname $@ -i${TERMINAL} -w ${WORKSPACE} -v ${WORKSPACE}:${WORKSPACE}\
 	 ${DOCKER_RUN_OPTS}\
 	 ${USERSPEC} $(call image_name, $@) ${CMD}
+
+%.image_print:
+	@echo "$(call image_name, $@)"
