@@ -31,27 +31,29 @@ runs:
       run: |
         echo "::group::build"
         npm install -g @devcontainers/cli
-        IMAGE_ID=${{ inputs.registry }}/$GITHUB_REPOSITORY/devcontainers.ci
+        IMAGE_ID=${{ inputs.registry }}/$GITHUB_REPOSITORY/${{ inputs.name }}
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+        TAG="$GITHUB_REF_NAME"
+        TAG=$(echo $TAG | tr '[A-Z].' '[a-z]_')
         old_id=''
-        if docker pull $IMAGE_ID:$GITHUB_REF_NAME; then
-          old_id=$(docker image inspect $IMAGE_ID:$GITHUB_REF_NAME --format "{{.ID}}")
+        if docker pull $IMAGE_ID:$TAG; then
+          old_id=$(docker image inspect $IMAGE_ID:$TAG --format "{{.ID}}")
         fi
-        devcontainer build --image-name $IMAGE_ID --cache-from $IMAGE_ID:$GITHUB_REF_NAME --workspace-folder .
+        devcontainer build --image-name $IMAGE_ID --cache-from $IMAGE_ID:$TAG --workspace-folder .
         echo "::group::up"
         devcontainer up --workspace-folder .
         echo "EXEC=devcontainer exec --workspace-folder ." >> $GITHUB_OUTPUT
         echo "::group::push"
-        new_id=$(docker image inspect $IMAGE_ID --format "{{.ID}}")
-        if [ "$old_id" != "$new_id" ]; then
-          if docker tag $IMAGE_ID $IMAGE_ID:$GITHUB_REF_NAME ; then
-            if [ -n '${{ inputs.password }}' ]; then
+        if [ -n '${{ inputs.password }}' ]; then
+          new_id=$(docker image inspect $IMAGE_ID --format "{{.ID}}")
+          if docker tag $IMAGE_ID $IMAGE_ID:$TAG ; then
+            if [ "$old_id" != "$new_id" ]; then
               username='${{ inputs.username }}'
               echo '${{ inputs.password }}' | docker login ${{ inputs.registry }} -u ${username:-'${{ github.actor }}'} --password-stdin
-              if docker push $IMAGE_ID:$GITHUB_REF_NAME ; then
-                echo "::info :: pushed $IMAGE_ID:$GITHUB_REF_NAME"
+              if docker push $IMAGE_ID:$TAG ; then
+                echo "::info :: pushed $IMAGE_ID:$TAG"
               else
-                echo "::warning :: can't push $IMAGE_ID:$GITHUB_REF_NAME"
+                echo "::warning :: can't push $IMAGE_ID:$TAG"
               fi
               docker logout ${{ inputs.registry }}
             fi
