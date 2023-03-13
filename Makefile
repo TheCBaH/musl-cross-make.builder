@@ -69,11 +69,11 @@ install,%:
 	 target='$(word 3, $(subst ${coma},${space},$@))';\
 	 gcc='$(word 2, $(subst ${coma},${space},$@))';\
 	 dst=${OUTDIR}/$$gcc/$$target;\
-	 ./tool.sh $$dst $$target meta;false;\
 	 rm -rf $$dst; mkdir -p ${OUTDIR}/$$gcc/$$target;\
 	 ${MAKE} -C ${musl} TARGET=$$target OUTPUT="$$(realpath $$dst)" install;\
 	 $$dst/bin/$$target-cc -v;\
-	 ./tool.sh $$dst $$target fixup
+	 ./tool.sh $$dst $$target fixup;\
+	 ./tool.sh $$dst $$target meta
 
 test,%:
 	set -eux;\
