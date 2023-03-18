@@ -181,7 +181,7 @@ jobs:
       run: |
         set -x
         tar='musl-cross-${{ matrix.target }}-gcc${{ matrix.gcc }}-${{ matrix.host }}.tar'
-        tar -cf $tar -C out/${{ matrix.gcc }}/${{ matrix.target }} .
+        tar -cf $tar --owner=0 --group=0 -C out/${{ matrix.gcc }}/${{ matrix.target }} .
         xz --keep --compress -9 --threads 0 $tar
         du -sh ${tar}*
     - name: Upload artifact
