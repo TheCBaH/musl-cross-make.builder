@@ -1,18 +1,18 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 {
     "name": "MUSL cross builder",
-    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-    "image": "mcr.microsoft.com/devcontainers/base:bullseye",
+    "build":  {
+        "dockerfile": "Dockerfile",
+        "cacheFrom": "ghcr.io/thecbah/musl-cross-make.builder/devcontainer:master"
+    },
     "features": {
-//        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
             "enableNonRootDocker": "true",
             "moby": "true"
         },
         "./apt-packages": {
-            "packages": "ccache qemu-user",
-        },
-//        "ghcr.io/devcontainers/features/node:1": {}
+            "packages": "ccache qemu-user"
+        }
     },
     // Use this environment variable if you need to bind mount your local source code into a new container.
     "remoteEnv": {
@@ -26,5 +26,5 @@
     // "customizations": {},
     // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
     // "remoteUser": "root"
-    "postCreateCommand": "sh -ceux 'git submodule update --recursive --init'"
+    "postCreateCommand": "git submodule update --recursive --init"
 }

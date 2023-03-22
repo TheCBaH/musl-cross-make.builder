@@ -9,8 +9,5 @@
             "default": "",
             "description": "packages to install"
         }
-    },
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils"
-    ]
+    }
 }

@@ -13,14 +13,11 @@ jobs:
     permissions:
       packages: write
     outputs:
-      static_fetch: ${{ steps.static.outputs.fetch }}
-      static_cache: ${{ steps.static.outputs.cache }}
       ubuntu_version: ${{ steps.version.outputs.version }}
     steps:
     - name: checkout
       uses: actions/checkout@v3
-    - name: static
-      id: static
+    - name: images
       uses: ./.github/workflows/actions/docker
       with:
         image: static
@@ -30,19 +27,6 @@ jobs:
       run: |
         . /etc/os-release
         echo "version=$ID-$VERSION_ID" >> $GITHUB_OUTPUT
-  devcontainer:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-    - name: checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: image
-      uses: ./.github/workflows/actions/devcontainer
-      with:
-        password: ${{ secrets.GITHUB_TOKEN }}
   build:
     needs: [prepare]
     runs-on: ${{ needs.prepare.outputs.ubuntu_version }}
@@ -110,6 +94,11 @@ jobs:
       uses: ./.github/workflows/actions/devcontainer
       if: ${{ matrix.host == 'devcontainer' }}
       id: devcontainer
+    - name: docker
+      uses: ./.github/workflows/actions/docker
+      if: ${{ matrix.host == 'static' }}
+      with:
+        image: static
     - name: setup
       run: |
         case "${{ matrix.host }}" in
@@ -117,9 +106,7 @@ jobs:
           echo "EXEC=${{ steps.devcontainer.outputs.exec }}" >> $GITHUB_ENV
           ;;
         static)
-          ${{ needs.prepare.outputs.static_fetch }}
-          make static.image ${{ needs.prepare.outputs.static_cache }}
-          echo "EXEC=.github/workflows/with-static.sh" >> $GITHUB_ENV
+          echo "EXEC=.github/workflows/with-docker.sh static" >> $GITHUB_ENV
           ;;
         ${{ needs.prepare.outputs.ubuntu_version }})
           echo "::group::apt"
