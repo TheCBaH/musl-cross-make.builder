@@ -107,12 +107,12 @@ jobs:
           ;;
         static)
           echo "EXEC=.github/workflows/with-docker.sh static" >> $GITHUB_ENV
+          echo "::group::apt"
+          sudo env PACKAGES='qemu-user' .devcontainer/apt-packages/install.sh
           ;;
         ${{ needs.prepare.outputs.ubuntu_version }})
           echo "::group::apt"
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get update
-          sudo apt-get -y install --no-install-recommends ccache
+          sudo env PACKAGES='ccache qemu-user' .devcontainer/apt-packages/install.sh
           ;;
         esac
     - name: ccache
@@ -154,12 +154,6 @@ jobs:
         du -sh out/${{ matrix.gcc }}/${{ matrix.target }}
     - name: test
       run: |
-        if [ "${{ matrix.host }}" != devcontainer ]; then
-          echo "::group::install"
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get -y install --no-install-recommends qemu-user
-          echo "::endgroup::"
-        fi
         ${{ env.EXEC }} make test,${{ matrix.gcc }},${{ matrix.target }}
         if [ "${{ matrix.host }}" = static ]; then
           make test,${{ matrix.gcc }},${{ matrix.target }}
@@ -187,9 +181,7 @@ jobs:
         path: out.tar
     - name: setup
       run: |
-        sudo apt-get update
-        export DEBIAN_FRONTEND=noninteractive
-        sudo apt-get -y install --no-install-recommends qemu-user
+        sudo env PACKAGES='qemu-user' .devcontainer/apt-packages/install.sh
     - name: Test
       run: |
         for f in out.tar/*/* ; do
