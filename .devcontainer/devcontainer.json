@@ -24,7 +24,9 @@
     // "postCreateCommand": "docker --version",
     // Configure tool-specific properties.
     // "customizations": {},
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root"
-    "postCreateCommand": "git submodule update --recursive --init"
+    "postCreateCommand": {
+        "submodules": "set -eux;git submodule update --recursive --init;make patches.apply"
+    },
+    "remoteUser": "vscode",
+    "waitFor": "postCreateCommand"
 }
