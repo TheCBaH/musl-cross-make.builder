@@ -140,11 +140,9 @@ jobs:
         if [ -d musl-cross-make/sources ]; then
           touch musl-cross-make/sources/*
         fi
-        if [ "${{ matrix.host }}" != devcontainer ]; then
-          echo "::group::Apply patches"
-          ${{ env.EXEC }} make patches.apply
-          echo "::endgroup::"
-        fi
+        echo "::group::Apply patches"
+        ${{ env.EXEC }} make patches.apply
+        echo "::endgroup::"
         ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }} STATIC=${{ matrix.host == 'static' }}
         ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
