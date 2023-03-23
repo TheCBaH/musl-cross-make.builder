@@ -107,6 +107,8 @@ jobs:
           ;;
         static)
           echo "EXEC=.github/workflows/with-docker.sh static" >> $GITHUB_ENV
+          echo "::group::apt"
+          sudo env PACKAGES='qemu-user' .devcontainer/apt-packages/install.sh
           ;;
         ${{ needs.prepare.outputs.ubuntu_version }})
           echo "::group::apt"
@@ -138,9 +140,11 @@ jobs:
         if [ -d musl-cross-make/sources ]; then
           touch musl-cross-make/sources/*
         fi
-        echo "::group::Apply patches"
-        ${{ env.EXEC }} make patches.apply
-        echo "::endgroup::"
+        if [ "${{ matrix.host }}" != devcontainer ]; then
+          echo "::group::Apply patches"
+          ${{ env.EXEC }} make patches.apply
+          echo "::endgroup::"
+        fi
         ${{ env.EXEC }} make config,${{ matrix.gcc }},${{ matrix.target }} STATIC=${{ matrix.host == 'static' }}
         ${{ env.EXEC }} .github/workflows/quiet.sh make build,${{ matrix.gcc }},${{ matrix.target }}
     - name: install
