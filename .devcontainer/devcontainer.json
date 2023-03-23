@@ -12,6 +12,13 @@
         },
         "./apt-packages": {
             "packages": "ccache qemu-user"
+        },
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": "true",
+            "username": "vscode",
+            "userUid": "1000",
+            "userGid": "1000",
+            "upgradePackages": "false"
         }
     },
     // Use this environment variable if you need to bind mount your local source code into a new container.
